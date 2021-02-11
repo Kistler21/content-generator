@@ -64,10 +64,25 @@ def find_keywords(wiki_contents, primary, secondary):
 
 def read_csv(file_name):
     '''Reads keywords from a CSV file.'''
+    # Open the file
     with open(file_name, 'r') as csv_file:
         csv_reader = csv.DictReader(csv_file)
+
+        # Read the contents
         for keywords in csv_reader:
             return keywords['input_keywords'].split(';')
+
+
+def csv_output(primary, secondary, paragraph):
+    '''Writes the output to a CSV file named output.csv.'''
+    # Open the file
+    with open('output.csv', 'w', newline='') as csv_file:
+        csv_writer = csv.writer(csv_file)
+
+        # Write contents to file
+        headers = ['input_keywords', 'output_content']
+        output = [f'{primary};{secondary}', paragraph]
+        csv_writer.writerows([headers, output])
 
 
 if __name__ == '__main__':
@@ -77,4 +92,4 @@ if __name__ == '__main__':
         primary, secondary = read_csv(sys.argv[1])
     wiki_contents = get_wiki_page(primary)
     paragraph = find_keywords(wiki_contents, primary, secondary)
-    print(paragraph)
+    csv_output(primary, secondary, paragraph)
