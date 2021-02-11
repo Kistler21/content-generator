@@ -7,7 +7,7 @@ from html.parser import HTMLParser
 
 class ParagraphParser(HTMLParser):
     '''
-    Custom HTMLParser class used for parsing data 
+    Custom HTMLParser class used for parsing data
     inside of <p> tags from Wikipedia pages.
     '''
 
@@ -36,7 +36,7 @@ class ParagraphParser(HTMLParser):
 
 
 def get_wiki_page(keyword):
-    '''Downlaods the contents of the specified keywords Wikipedia page.'''
+    '''Downloads the contents of the specified keywords Wikipedia page.'''
     # Open the Wiki page of the keyword
     url = f'https://en.wikipedia.org/wiki/{keyword}'
     wiki = urlopen(url)
@@ -62,9 +62,19 @@ def find_keywords(wiki_contents, primary, secondary):
     return f'No paragraph found containing {primary} and {secondary}.'
 
 
+def read_csv(file_name):
+    '''Reads keywords from a CSV file.'''
+    with open(file_name, 'r') as csv_file:
+        csv_reader = csv.DictReader(csv_file)
+        for keywords in csv_reader:
+            return keywords['input_keywords'].split(';')
+
+
 if __name__ == '__main__':
-    primary = 'Bottle'
-    secondary = 'carbonated'
+    primary = 'coat'
+    secondary = 'capes'
+    if len(sys.argv) == 2:
+        primary, secondary = read_csv(sys.argv[1])
     wiki_contents = get_wiki_page(primary)
     paragraph = find_keywords(wiki_contents, primary, secondary)
     print(paragraph)
