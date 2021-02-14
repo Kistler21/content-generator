@@ -45,7 +45,10 @@ def get_wiki_page(keyword):
 
 
 def find_keywords(wiki_contents, primary, secondary):
-    '''Finds the pargraph containing the primary and secondary keywords.'''
+    '''
+    Finds the pargraph containing the primary and secondary keywords.
+    Returns False if no pargraph is found containing both keywords.
+    '''
     # Parse the content for all data inside <p> elements
     parser = ParagraphParser()
     parser.feed(wiki_contents)
@@ -59,7 +62,7 @@ def find_keywords(wiki_contents, primary, secondary):
             return paragraph.strip()
 
     # No paragraph found with both words
-    return f'No paragraph found containing {primary} and {secondary}.'
+    return False
 
 
 def read_csv(file_name):
@@ -102,11 +105,28 @@ def main():
         primary = primary_ent.get()
         secondary = secondary_ent.get()
 
+        # Check the format of the keywords
+        if not primary.isalpha() or not secondary.isalpha():
+            # Place error message
+            message = 'Primary and secondary keywords can only contain uppercase or lowercase letters.'
+            output_txt['fg'] = 'red'
+            output_txt.insert('1.0', message)
+            return
+
         # Generate the output
         wiki_contents = get_wiki_page(primary)
         paragraph = find_keywords(wiki_contents, primary, secondary)
 
+        # Check if a valid paragraph was found
+        if not paragraph:
+            # Place error message
+            message = f'No paragraph was found containing {primary} and {secondary}.'
+            output_txt['fg'] = 'red'
+            output_txt.insert('1.0', message)
+            return
+
         # Place the output in the textbox
+        output_txt['fg'] = 'black'
         output_txt.insert('1.0', paragraph)
         output_txt['state'] = 'disabled'
         csv_output(primary, secondary, paragraph)
@@ -156,7 +176,7 @@ def main():
         padx=(0, 5)
     )
 
-    # Create and pace the button for generating the output
+    # Create and place the button for generating the output
     generate_btn = tk.Button(
         window,
         text='Generate',
@@ -197,15 +217,16 @@ def main():
         pady=(0, 10)
     )
 
+    # Check if csv is passed on command line
+    if len(sys.argv) == 2:
+        primary, secondary = read_csv(sys.argv[1])
+        primary_ent.insert(0, primary)
+        secondary_ent.insert(0, secondary)
+        generate()
+
     # Run the loop to look for events
     window.mainloop()
 
 
 if __name__ == '__main__':
-    # Check if csv is passed on command line
-    if len(sys.argv) == 2:
-        primary, secondary = read_csv(sys.argv[1])
-        wiki_contents = get_wiki_page(primary)
-        paragraph = find_keywords(wiki_contents, primary, secondary)
-        csv_output(primary, secondary, paragraph)
     main()
