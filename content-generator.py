@@ -1,5 +1,4 @@
 import tkinter as tk
-import tkinter.font
 import sys
 import csv
 from urllib.request import urlopen
@@ -116,6 +115,10 @@ def main():
     window = tk.Tk()
     window.title('Content Generator')
 
+    # Configure rows and columns of window
+    window.rowconfigure(3, weight=1)
+    window.columnconfigure(1, weight=1)
+
     # Create the label and entry for primary keyword
     primary_lbl = tk.Label(window, text='Primary Keyword:')
     primary_ent = tk.Entry(window)
@@ -189,7 +192,7 @@ def main():
     output_txt.grid(
         row=3,
         column=1,
-        sticky='ew',
+        sticky='nsew',
         padx=(0, 5),
         pady=(0, 10)
     )
@@ -199,6 +202,7 @@ def main():
 
 
 if __name__ == '__main__':
+    # Check if csv is passed on command line
     if len(sys.argv) == 2:
         primary, secondary = read_csv(sys.argv[1])
         wiki_contents = get_wiki_page(primary)
