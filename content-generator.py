@@ -92,6 +92,26 @@ def csv_output(primary, secondary, paragraph):
 
 def main():
     '''Contains all the functionality of the GUI.'''
+
+    def generate():
+        '''Function that is called when the generate button is pressed.'''
+        # Enable the textbox and delete the old contents
+        output_txt['state'] = 'normal'
+        output_txt.delete('1.0', tk.END)
+
+        # Get the primary keywords from the entry boxes
+        primary = primary_ent.get()
+        secondary = secondary_ent.get()
+
+        # Generate the output
+        wiki_contents = get_wiki_page(primary)
+        paragraph = find_keywords(wiki_contents, primary, secondary)
+
+        # Place the output in the textbox
+        output_txt.insert('1.0', paragraph)
+        output_txt['state'] = 'disabled'
+        csv_output(primary, secondary, paragraph)
+
     # Open the main menu for the GUI
     window = tk.Tk()
     window.title('Content Generator')
@@ -134,7 +154,12 @@ def main():
     )
 
     # Create and pace the button for generating the output
-    generate_btn = tk.Button(window, text='Generate', bg='lightgray')
+    generate_btn = tk.Button(
+        window,
+        text='Generate',
+        bg='lightgray',
+        command=generate
+    )
     generate_btn.grid(
         row=2,
         column=0,
@@ -146,7 +171,13 @@ def main():
 
     # Create the label and text for output
     output_lbl = tk.Label(window, text='Generated Output:')
-    output_txt = tk.Text(window, height=10, width=40, wrap=tk.WORD)
+    output_txt = tk.Text(
+        window,
+        height=15,
+        width=50,
+        wrap=tk.WORD,
+        state='disabled'
+    )
 
     # Place the output label and text
     output_lbl.grid(
@@ -168,11 +199,9 @@ def main():
 
 
 if __name__ == '__main__':
-    primary = 'coat'
-    secondary = 'capes'
     if len(sys.argv) == 2:
         primary, secondary = read_csv(sys.argv[1])
-    wiki_contents = get_wiki_page(primary)
-    paragraph = find_keywords(wiki_contents, primary, secondary)
-    csv_output(primary, secondary, paragraph)
+        wiki_contents = get_wiki_page(primary)
+        paragraph = find_keywords(wiki_contents, primary, secondary)
+        csv_output(primary, secondary, paragraph)
     main()
