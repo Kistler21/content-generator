@@ -1,4 +1,5 @@
-import tkinter
+import tkinter as tk
+import tkinter.font
 import sys
 import csv
 from urllib.request import urlopen
@@ -77,12 +78,93 @@ def csv_output(primary, secondary, paragraph):
     '''Writes the output to a CSV file named output.csv.'''
     # Open the file
     with open('output.csv', 'w', newline='') as csv_file:
-        csv_writer = csv.writer(csv_file)
+        headers = ['input_keywords', 'output_content']
+        csv_writer = csv.DictWriter(csv_file, fieldnames=headers)
 
         # Write contents to file
-        headers = ['input_keywords', 'output_content']
-        output = [f'{primary};{secondary}', paragraph]
-        csv_writer.writerows([headers, output])
+        output = {
+            headers[0]: f'{primary};{secondary}',
+            headers[1]: paragraph
+        }
+        csv_writer.writeheader()
+        csv_writer.writerow(output)
+
+
+def main():
+    '''Contains all the functionality of the GUI.'''
+    # Open the main menu for the GUI
+    window = tk.Tk()
+    window.title('Content Generator')
+
+    # Create the label and entry for primary keyword
+    primary_lbl = tk.Label(window, text='Primary Keyword:')
+    primary_ent = tk.Entry(window)
+
+    # Place the primary keyword label and entry
+    primary_lbl.grid(
+        row=0,
+        column=0,
+        sticky='e',
+        pady=10,
+        padx=(5, 0)
+    )
+    primary_ent.grid(
+        row=0,
+        column=1,
+        padx=(0, 5),
+        sticky='ew'
+    )
+
+    # Create the label and entry for secondary keyword
+    secondary_lbl = tk.Label(window, text='Secondary Keyword:')
+    secondary_ent = tk.Entry(window)
+
+    # Place the secondary keyword label and entry
+    secondary_lbl.grid(
+        row=1,
+        column=0,
+        sticky='e',
+        padx=(5, 0)
+    )
+    secondary_ent.grid(
+        row=1,
+        column=1,
+        sticky='ew',
+        padx=(0, 5)
+    )
+
+    # Create and pace the button for generating the output
+    generate_btn = tk.Button(window, text='Generate', bg='lightgray')
+    generate_btn.grid(
+        row=2,
+        column=0,
+        pady=20,
+        ipady=10,
+        ipadx=10,
+        columnspan=2
+    )
+
+    # Create the label and text for output
+    output_lbl = tk.Label(window, text='Generated Output:')
+    output_txt = tk.Text(window, height=10, width=40, wrap=tk.WORD)
+
+    # Place the output label and text
+    output_lbl.grid(
+        row=3,
+        column=0,
+        sticky='ne',
+        padx=(5, 0),
+    )
+    output_txt.grid(
+        row=3,
+        column=1,
+        sticky='ew',
+        padx=(0, 5),
+        pady=(0, 10)
+    )
+
+    # Run the loop to look for events
+    window.mainloop()
 
 
 if __name__ == '__main__':
@@ -93,3 +175,4 @@ if __name__ == '__main__':
     wiki_contents = get_wiki_page(primary)
     paragraph = find_keywords(wiki_contents, primary, secondary)
     csv_output(primary, secondary, paragraph)
+    main()
