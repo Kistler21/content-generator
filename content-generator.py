@@ -1,7 +1,7 @@
 import tkinter as tk
 import sys
 import csv
-from urllib.request import urlopen
+from urllib.request import urlopen, HTTPError
 from html.parser import HTMLParser
 
 
@@ -36,12 +36,18 @@ class ParagraphParser(HTMLParser):
 
 
 def get_wiki_page(keyword):
-    '''Downloads the contents of the specified keywords Wikipedia page.'''
+    '''
+    Downloads the contents of the specified keywords Wikipedia page.
+    Return false if the page doesn't exist.
+    '''
     # Open the Wiki page of the keyword
-    url = f'https://en.wikipedia.org/wiki/{keyword}'
-    wiki = urlopen(url)
-    wiki_contents = wiki.read().decode('utf-8')
-    return wiki_contents
+    try:
+        url = f'https://en.wikipedia.org/wiki/{keyword}'
+        wiki = urlopen(url)
+        wiki_contents = wiki.read().decode('utf-8')
+        return wiki_contents
+    except HTTPError:
+        return False
 
 
 def find_keywords(wiki_contents, primary, secondary):
@@ -108,13 +114,20 @@ def main():
         # Check the format of the keywords
         if not primary.isalpha() or not secondary.isalpha():
             # Place error message
-            message = 'Primary and secondary keywords can only contain uppercase or lowercase letters.'
+            message = 'Primary and secondary keywords can only contain uppercase or lowercase letters and cannot be empty.'
             output_txt['fg'] = 'red'
             output_txt.insert('1.0', message)
             return
 
-        # Generate the output
+        # Download and validate the webpage
         wiki_contents = get_wiki_page(primary)
+        if not wiki_contents:
+            message = 'No Wikipedia page for specified primary keyword.'
+            output_txt['fg'] = 'red'
+            output_txt.insert('1.0', message)
+            return
+
+        # Parse the HTML for a valid paragraph
         paragraph = find_keywords(wiki_contents, primary, secondary)
 
         # Check if a valid paragraph was found
