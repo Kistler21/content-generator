@@ -43,7 +43,7 @@ def get_census_data(year, state, output_txt):
     output_txt.delete('1.0', tk.END)
 
     # Call the backend of the population generator
-    output_file = '../populationgenerator/output.csv'
+    output_file = 'pg_output.csv'
     child = subprocess.Popen(
         ['python', '../populationgenerator/backend.py', year, state, output_file])
     child.wait()
