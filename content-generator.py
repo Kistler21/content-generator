@@ -1,208 +1,178 @@
-import tkinter as tk
 import sys
 import csv
-from urllib.request import urlopen, HTTPError
-from html.parser import HTMLParser
+import subprocess
+import tkinter as tk
+from backend import read_csv
 
 
-class ParagraphParser(HTMLParser):
-    '''
-    Custom HTMLParser class used for parsing data
-    inside of <p> tags from Wikipedia pages.
-    '''
+def generate(primary, secondary, output_txt):
+    """Function that is called when the generate button is pressed."""
+    # Enable the textbox and delete the old contents
+    output_txt['state'] = 'normal'
+    output_txt.delete('1.0', tk.END)
 
-    def __init__(self):
-        super().__init__()
-        self.in_paragraph = False
-        self.paragraphs = ['']
-        self.index = 0
+    # Call the backend process to get results
+    output_file = 'output.csv'
+    child = subprocess.Popen(
+        ['python', 'backend.py', primary, secondary, output_file])
+    child.wait()
 
-    def handle_starttag(self, tag, attrs):
-        '''Set in_paragraph when a <p> tag is found.'''
-        if tag == 'p':
-            self.in_paragraph = True
-
-    def handle_data(self, data):
-        '''Read all data found inside <p> tags.'''
-        if self.in_paragraph:
-            self.paragraphs[self.index] += data
-
-    def handle_endtag(self, tag):
-        '''Handle when a closing </p> tag is found.'''
-        if tag == 'p':
-            self.in_paragraph = False
-            self.index += 1
-            self.paragraphs.append('')
-
-
-def get_wiki_page(keyword):
-    '''
-    Downloads the contents of the specified keywords Wikipedia page.
-    Return false if the page doesn't exist.
-    '''
-    # Replace space with underscore for Wiki page
-    keyword = keyword.replace(' ', '_')
-
-    # Open the Wiki page of the keyword
-    try:
-        url = f'https://en.wikipedia.org/wiki/{keyword}'
-        wiki = urlopen(url)
-        wiki_contents = wiki.read().decode('utf-8')
-        return wiki_contents
-    except HTTPError:
-        return False
-
-
-def find_keywords(wiki_contents, primary, secondary):
-    '''
-    Finds the pargraph containing the primary and secondary keywords.
-    Returns False if no pargraph is found containing both keywords.
-    '''
-    # Parse the content for all data inside <p> elements
-    parser = ParagraphParser()
-    parser.feed(wiki_contents)
-
-    # Find paragraph that contains both keywords
-    for paragraph in parser.paragraphs:
-        if (
-            primary.lower() in paragraph.lower()
-            and secondary.lower() in paragraph.lower()
-        ):
-            return paragraph.strip()
-
-    # No paragraph found with both words
-    return False
-
-
-def read_csv(file_name):
-    '''Reads keywords from a CSV file.'''
-    # Open the file
-    with open(file_name, 'r') as csv_file:
-        csv_reader = csv.DictReader(csv_file)
-
-        # Read the contents
-        for keywords in csv_reader:
-            return keywords['input_keywords'].split(';')
-
-
-def csv_output(primary, secondary, paragraph):
-    '''Writes the output to a CSV file named output.csv.'''
-    # Open the file
-    with open('output.csv', 'w', newline='') as csv_file:
-        headers = ['input_keywords', 'output_content']
-        csv_writer = csv.DictWriter(csv_file, fieldnames=headers)
-
-        # Write contents to file
-        output = {
-            headers[0]: f'{primary};{secondary}',
-            headers[1]: paragraph
-        }
-        csv_writer.writeheader()
-        csv_writer.writerow(output)
-
-
-def main():
-    '''Contains all the functionality of the GUI.'''
-
-    def generate():
-        '''Function that is called when the generate button is pressed.'''
-        # Enable the textbox and delete the old contents
-        output_txt['state'] = 'normal'
-        output_txt.delete('1.0', tk.END)
-
-        # Get the primary keywords from the entry boxes
-        primary = primary_ent.get()
-        secondary = secondary_ent.get()
-
-        # Check the format of the keywords
-        if (
-            not all(char.isalnum() or char.isspace() for char in primary)
-            or not all(char.isalnum() or char.isspace() for char in secondary)
-        ):
-            # Place error message
-            message = 'Primary and secondary keywords can only contain uppercase letters, lowercase letters, numbers, spaces, and cannot be empty.'
-            output_txt['fg'] = 'red'
-            output_txt.insert('1.0', message)
-            return
-
-        # Download and validate the webpage
-        wiki_contents = get_wiki_page(primary)
-        if not wiki_contents:
-            message = 'No Wikipedia page for specified primary keyword.'
-            output_txt['fg'] = 'red'
-            output_txt.insert('1.0', message)
-            return
-
-        # Parse the HTML for a valid paragraph
-        paragraph = find_keywords(wiki_contents, primary, secondary)
-
-        # Check if a valid paragraph was found
-        if not paragraph:
-            # Place error message
-            message = f'No paragraph was found containing {primary} and {secondary}.'
-            output_txt['fg'] = 'red'
-            output_txt.insert('1.0', message)
-            return
-
-        # Place the output in the textbox
+    # Write output to output text box
+    output = read_csv(output_file, 'output_content')
+    error_messages = [
+        'Primary and secondary keywords can only contain letters, numbers, spaces, and cannot be empty.',
+        'No Wikipedia page for specified primary keyword.',
+        f'No paragraph was found containing {primary} and {secondary}.',
+    ]
+    # Set text color
+    if output in error_messages:
+        output_txt['fg'] = 'red'
+    else:
         output_txt['fg'] = 'black'
-        output_txt.insert('1.0', paragraph)
-        output_txt['state'] = 'disabled'
-        csv_output(primary, secondary, paragraph)
+    output_txt.insert('1.0', output)
+    output_txt['state'] = 'disabled'
 
+
+def get_census_data(year, state, output_txt):
+    """
+    Communicates with a population generator project to get the
+    census data for the specified state and year
+    """
+    # Enable the textbox and delete the old contents
+    output_txt['state'] = 'normal'
+    output_txt.delete('1.0', tk.END)
+
+    # Call the backend of the population generator
+    output_file = '../populationgenerator/output_content'
+    child = subprocess.Popen(
+        ['python', '../populationgenerator/backend.py', year, state, output_file])
+    child.wait()
+
+    # Write output to output text box
+    output = read_csv(output_file, 'output_population_size')
+    output_txt['fg'] = 'black'
+    output_txt.insert('1.0', output)
+    output_txt['state'] = 'disabled'
+
+
+def create_main_window(title):
+    """
+    Creates the main window for the GUI.
+    All other widgets will be a child of the window.
+    """
     # Open the main menu for the GUI
     window = tk.Tk()
-    window.title('Content Generator')
+    window.title(title)
 
     # Configure rows and columns of window
-    window.rowconfigure(3, weight=1)
+    window.rowconfigure(4, weight=1)
     window.columnconfigure(1, weight=1)
 
-    # Create the label and entry for primary keyword
-    primary_lbl = tk.Label(window, text='Primary Keyword:')
-    primary_ent = tk.Entry(window)
+    return window
 
-    # Place the primary keyword label and entry
-    primary_lbl.grid(
-        row=0,
-        column=0,
-        sticky='e',
-        pady=10,
-        padx=(5, 0)
+
+def creat_widgets(window):
+    """Creates all widgets needed for the GUI."""
+    widgets = dict()
+    widgets['labels'] = create_labels(window)
+    widgets['entries'] = create_entries(window)
+    widgets['texts'] = create_texts(window)
+    widgets['buttons'] = create_buttons(window, widgets)
+    return widgets
+
+
+def create_labels(window):
+    """Creates all labels needed for the GUI."""
+    labels = dict()
+    labels['primary'] = create_label(
+        window,
+        'Primary Keyword (or State):',
+        {
+            'row': 0,
+            'column': 0,
+            'sticky': 'e',
+            'pady': 10,
+            'padx': (5, 0)
+        }
     )
-    primary_ent.grid(
-        row=0,
+    labels['secondary'] = create_label(
+        window,
+        'Secondary Keyword (or Year):',
+        {
+            'row': 1,
+            'column': 0,
+            'sticky': 'e',
+            'padx': (5, 0)
+        }
+    )
+    labels['output'] = create_label(
+        window,
+        'Generated Output:',
+        {
+            'row': 4,
+            'column': 0,
+            'sticky': 'ne',
+            'padx': (5, 0),
+        }
+    )
+    return labels
+
+
+def create_entries(window):
+    """Creates all entries needed for the GUI."""
+    entries = dict()
+    entries['primary'] = create_entry(
+        window,
+        {
+            'row': 0,
+            'column': 1,
+            'padx': (0, 5),
+            'sticky': 'ew'
+        }
+    )
+    entries['secondary'] = create_entry(
+        window,
+        {
+            'row': 1,
+            'column': 1,
+            'padx': (0, 5),
+            'sticky': 'ew'
+        }
+    )
+    return entries
+
+
+def create_texts(window):
+    """Creates all text boxes needed for the GUI."""
+    texts = dict()
+    texts['output'] = tk.Text(
+        window,
+        height=15,
+        width=50,
+        wrap=tk.WORD,
+        state='disabled'
+    )
+    texts['output'].grid(
+        row=4,
         column=1,
+        sticky='nsew',
         padx=(0, 5),
-        sticky='ew'
+        pady=(0, 10)
     )
+    return texts
 
-    # Create the label and entry for secondary keyword
-    secondary_lbl = tk.Label(window, text='Secondary Keyword:')
-    secondary_ent = tk.Entry(window)
 
-    # Place the secondary keyword label and entry
-    secondary_lbl.grid(
-        row=1,
-        column=0,
-        sticky='e',
-        padx=(5, 0)
-    )
-    secondary_ent.grid(
-        row=1,
-        column=1,
-        sticky='ew',
-        padx=(0, 5)
-    )
-
-    # Create and place the button for generating the output
-    generate_btn = tk.Button(
+def create_buttons(window, widgets):
+    """Creates all buttons needed for the GUI."""
+    buttons = dict()
+    buttons['generate'] = tk.Button(
         window,
         text='Generate',
         bg='lightgray',
-        command=generate
+        command=lambda: generate(
+            widgets['entries']['primary'].get(), widgets['entries']['secondary'].get(), widgets['texts']['output'])
     )
-    generate_btn.grid(
+    buttons['generate'].grid(
         row=2,
         column=0,
         pady=20,
@@ -210,40 +180,56 @@ def main():
         ipadx=10,
         columnspan=2
     )
-
-    # Create the label and text for output
-    output_lbl = tk.Label(window, text='Generated Output:')
-    output_txt = tk.Text(
+    buttons['population'] = tk.Button(
         window,
-        height=15,
-        width=50,
-        wrap=tk.WORD,
-        state='disabled'
+        text='Get Population',
+        bg='lightgray',
+        command=lambda: get_census_data(
+            widgets['entries']['secondary'].get(), widgets['entries']['primary'].get(), widgets['texts']['output'])
     )
-
-    # Place the output label and text
-    output_lbl.grid(
+    buttons['population'].grid(
         row=3,
         column=0,
-        sticky='ne',
-        padx=(5, 0),
+        pady=(0, 20),
+        ipady=10,
+        ipadx=10,
+        columnspan=2
     )
-    output_txt.grid(
-        row=3,
-        column=1,
-        sticky='nsew',
-        padx=(0, 5),
-        pady=(0, 10)
-    )
+    return buttons
+
+
+def create_label(parent, text, grid_args):
+    """
+    Creates a label with the specified parent and text.
+    Label is placed using grid by unpacking grid_args.
+    """
+    lbl = tk.Label(parent, text=text)
+    lbl.grid(**grid_args)
+    return lbl
+
+
+def create_entry(parent, grid_args):
+    """
+    Creates a label with the specified parent.
+    Label is placed using grid by unpacking grid_args.
+    """
+    ent = tk.Entry(parent)
+    ent.grid(**grid_args)
+    return ent
+
+
+def main():
+    """Contains all the functionality of the GUI."""
+    window = create_main_window('Content Generator')
+    widgets = creat_widgets(window)
 
     # Check if csv is passed on command line
     if len(sys.argv) == 2:
-        primary, secondary = read_csv(sys.argv[1])
-        primary_ent.insert(0, primary)
-        secondary_ent.insert(0, secondary)
-        generate()
+        primary, secondary = read_csv(sys.argv[1], 'input_keywords')
+        widgets['entries']['primary'].insert(0, primary)
+        widgets['entries']['secondary'].insert(0, secondary)
+        generate(primary, secondary, widgets['texts']['output'])
 
-    # Run the loop to look for events
     window.mainloop()
 
 

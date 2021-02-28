@@ -1,3 +1,5 @@
 venv
 .vscode
 *.csv
+!input.csv
+__pycache__
