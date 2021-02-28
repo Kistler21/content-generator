@@ -40,7 +40,6 @@ def get_wiki_page(keyword):
     Downloads the contents of the specified keywords Wikipedia page.
     Return false if the page doesn't exist.
     """
-    # Replace space with underscore for Wiki page
     keyword = keyword.replace(' ', '_')
 
     # Open the Wiki page of the keyword
@@ -70,13 +69,11 @@ def find_keywords(wiki_contents, primary, secondary):
         ):
             return paragraph.strip()
 
-    # No paragraph found with both words
     return False
 
 
 def read_csv(file_name, key):
     """Reads keywords from a CSV file."""
-    # Open the file
     with open(file_name, 'r') as csv_file:
         csv_reader = csv.DictReader(csv_file)
 
@@ -90,7 +87,6 @@ def read_csv(file_name, key):
 
 def csv_output(filename, primary, secondary, paragraph):
     """Writes the output to the given CSV filename."""
-    # Open the file
     with open(filename, 'w', newline='') as csv_file:
         headers = ['input_keywords', 'output_content']
         csv_writer = csv.DictWriter(csv_file, fieldnames=headers)
@@ -112,7 +108,7 @@ def get_input():
     # Input file and output file passed
     if len(sys.argv) == 3:
         primary, secondary = read_csv(sys.argv[1], 'input_keywords')
-    # Primary keyword, seconary keyword, and output file passed
+    # Primary keyword, secondary keyword, and output file passed
     elif len(sys.argv) == 4:
         primary = sys.argv[1]
         secondary = sys.argv[2]

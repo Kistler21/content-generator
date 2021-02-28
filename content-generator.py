@@ -60,14 +60,10 @@ def create_main_window(title):
     Creates the main window for the GUI.
     All other widgets will be a child of the window.
     """
-    # Open the main menu for the GUI
     window = tk.Tk()
     window.title(title)
-
-    # Configure rows and columns of window
     window.rowconfigure(4, weight=1)
     window.columnconfigure(1, weight=1)
-
     return window
 
 
@@ -87,33 +83,17 @@ def create_labels(window):
     labels['primary'] = create_label(
         window,
         'Primary Keyword (or State):',
-        {
-            'row': 0,
-            'column': 0,
-            'sticky': 'e',
-            'pady': 10,
-            'padx': (5, 0)
-        }
+        {'row': 0, 'column': 0, 'sticky': 'e', 'pady': 10, 'padx': (5, 0)}
     )
     labels['secondary'] = create_label(
         window,
         'Secondary Keyword (or Year):',
-        {
-            'row': 1,
-            'column': 0,
-            'sticky': 'e',
-            'padx': (5, 0)
-        }
+        {'row': 1, 'column': 0, 'sticky': 'e', 'padx': (5, 0)}
     )
     labels['output'] = create_label(
         window,
         'Generated Output:',
-        {
-            'row': 4,
-            'column': 0,
-            'sticky': 'ne',
-            'padx': (5, 0),
-        }
+        {'row': 4, 'column': 0, 'sticky': 'ne', 'padx': (5, 0), }
     )
     return labels
 
@@ -123,21 +103,11 @@ def create_entries(window):
     entries = dict()
     entries['primary'] = create_entry(
         window,
-        {
-            'row': 0,
-            'column': 1,
-            'padx': (0, 5),
-            'sticky': 'ew'
-        }
+        {'row': 0, 'column': 1, 'padx': (0, 5), 'sticky': 'ew'}
     )
     entries['secondary'] = create_entry(
         window,
-        {
-            'row': 1,
-            'column': 1,
-            'padx': (0, 5),
-            'sticky': 'ew'
-        }
+        {'row': 1, 'column': 1, 'padx': (0, 5), 'sticky': 'ew'}
     )
     return entries
 
@@ -145,20 +115,10 @@ def create_entries(window):
 def create_texts(window):
     """Creates all text boxes needed for the GUI."""
     texts = dict()
-    texts['output'] = tk.Text(
-        window,
-        height=15,
-        width=50,
-        wrap=tk.WORD,
-        state='disabled'
-    )
-    texts['output'].grid(
-        row=4,
-        column=1,
-        sticky='nsew',
-        padx=(0, 5),
-        pady=(0, 10)
-    )
+    texts['output'] = tk.Text(window, height=15, width=50,
+                              wrap=tk.WORD, state='disabled')
+    texts['output'].grid(row=4, column=1, sticky='nsew',
+                         padx=(0, 5), pady=(0, 10))
     return texts
 
 
@@ -172,14 +132,8 @@ def create_buttons(window, widgets):
         command=lambda: generate(
             widgets['entries']['primary'].get(), widgets['entries']['secondary'].get(), widgets['texts']['output'])
     )
-    buttons['generate'].grid(
-        row=2,
-        column=0,
-        pady=20,
-        ipady=10,
-        ipadx=10,
-        columnspan=2
-    )
+    buttons['generate'].grid(row=2, column=0, pady=20,
+                             ipady=10, ipadx=10, columnspan=2)
     buttons['population'] = tk.Button(
         window,
         text='Get Population',
@@ -187,14 +141,8 @@ def create_buttons(window, widgets):
         command=lambda: get_census_data(
             widgets['entries']['secondary'].get(), widgets['entries']['primary'].get(), widgets['texts']['output'])
     )
-    buttons['population'].grid(
-        row=3,
-        column=0,
-        pady=(0, 20),
-        ipady=10,
-        ipadx=10,
-        columnspan=2
-    )
+    buttons['population'].grid(row=3, column=0, pady=(0, 20),
+                               ipady=10, ipadx=10, columnspan=2)
     return buttons
 
 
