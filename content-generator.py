@@ -40,6 +40,9 @@ def get_wiki_page(keyword):
     Downloads the contents of the specified keywords Wikipedia page.
     Return false if the page doesn't exist.
     '''
+    # Replace space with underscore for Wiki page
+    keyword = keyword.replace(' ', '_')
+
     # Open the Wiki page of the keyword
     try:
         url = f'https://en.wikipedia.org/wiki/{keyword}'
@@ -112,9 +115,12 @@ def main():
         secondary = secondary_ent.get()
 
         # Check the format of the keywords
-        if not primary.isalpha() or not secondary.isalpha():
+        if (
+            not all(char.isalnum() or char.isspace() for char in primary)
+            or not all(char.isalnum() or char.isspace() for char in secondary)
+        ):
             # Place error message
-            message = 'Primary and secondary keywords can only contain uppercase or lowercase letters and cannot be empty.'
+            message = 'Primary and secondary keywords can only contain uppercase letters, lowercase letters, numbers, spaces, and cannot be empty.'
             output_txt['fg'] = 'red'
             output_txt.insert('1.0', message)
             return
