@@ -18,7 +18,7 @@ py content-generator.py
 ```
 **Linux/macOS:**
 ```
-python3 content-generator
+python3 content-generator.py
 ```
 <img src="./media/start_screen.PNG" width=100%><br>
 ### Generate Content
@@ -33,7 +33,7 @@ py content-generator.py input.csv
 ```
 **Linux/macOS:**
 ```
-python3 content-generator input.csv
+python3 content-generator.py input.csv
 ```
 **input.csv format**
 ```
