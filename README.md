@@ -1,13 +1,13 @@
 # content-generator
 > Tkinter GUI that retrieves the primary keyword's Wikipedia article and displays a paragraph from that article with both keywords.
 
-`pygame-sudoku` provides a GUI that allows user to play Sudoku. The board is a set board that can only be changed through the `sudoku.py` file.
+`content-generator` provides a GUI that allows user to generate content from Wikipedia using a pair of specified keywords.
 
 ## Download
 All of the following instructions assumes that the user already has a valid version of Python 3.6+ installed.<br>
 To download the program onto your personal computer:
 ```
-git clone https://github.com/Kistler21/pygame-sudoku.git
+git clone https://github.com/Kistler21/content-generator.git
 ```
 
 ## Usage
