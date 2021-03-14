@@ -14,7 +14,8 @@ def generate(primary, secondary, output_txt):
     # Call the backend process to get results
     output_file = 'output.csv'
     child = subprocess.Popen(
-        ['python', 'backend.py', primary, secondary, output_file])
+        ['python', 'backend.py', primary, secondary, output_file]
+    )
     child.wait()
 
     # Write output to output text box
@@ -24,6 +25,7 @@ def generate(primary, secondary, output_txt):
         'No Wikipedia page for specified primary keyword.',
         f'No paragraph was found containing {primary} and {secondary}.',
     ]
+
     # Set text color
     if output in error_messages:
         output_txt['fg'] = 'red'
@@ -45,7 +47,8 @@ def get_census_data(year, state, output_txt):
     # Call the backend of the population generator
     output_file = 'pg_output.csv'
     child = subprocess.Popen(
-        ['python', '../populationgenerator/backend.py', year, state, output_file])
+        ['python', '../populationgenerator/backend.py', year, state, output_file]
+    )
     child.wait()
 
     # Write output to output text box
@@ -93,7 +96,17 @@ def create_labels(window):
     labels['output'] = create_label(
         window,
         'Generated Output:',
-        {'row': 4, 'column': 0, 'sticky': 'ne', 'padx': (5, 0), }
+        {'row': 4, 'column': 0, 'sticky': 'ne', 'padx': (5, 0)}
+    )
+    labels['generate_info'] = create_label(
+        window,
+        'Generate: Search the Wikipedia page of the primary keyword and find a pargarph containing both keywords.',
+        {'row': 5, 'column': 0, 'columnspan': 2, 'sticky': 'w', 'padx': 5}
+    )
+    labels['get_pop_info'] = create_label(
+        window,
+        'Get Population: Get the census data for the given state and year.',
+        {'row': 6, 'column': 0, 'columnspan': 2, 'sticky': 'w', 'padx': 5}
     )
     return labels
 
@@ -115,10 +128,12 @@ def create_entries(window):
 def create_texts(window):
     """Creates all text boxes needed for the GUI."""
     texts = dict()
-    texts['output'] = tk.Text(window, height=15, width=50,
-                              wrap=tk.WORD, state='disabled')
-    texts['output'].grid(row=4, column=1, sticky='nsew',
-                         padx=(0, 5), pady=(0, 10))
+    texts['output'] = tk.Text(
+        window, height=15, width=50, wrap=tk.WORD, state='disabled'
+    )
+    texts['output'].grid(
+        row=4, column=1, sticky='nsew', padx=(0, 5), pady=(0, 10)
+    )
     return texts
 
 
@@ -132,8 +147,9 @@ def create_buttons(window, widgets):
         command=lambda: generate(
             widgets['entries']['primary'].get(), widgets['entries']['secondary'].get(), widgets['texts']['output'])
     )
-    buttons['generate'].grid(row=2, column=0, pady=20,
-                             ipady=10, ipadx=10, columnspan=2)
+    buttons['generate'].grid(
+        row=2, column=0, pady=20, ipady=10, ipadx=10, columnspan=2
+    )
     buttons['population'] = tk.Button(
         window,
         text='Get Population',
@@ -141,8 +157,9 @@ def create_buttons(window, widgets):
         command=lambda: get_census_data(
             widgets['entries']['secondary'].get(), widgets['entries']['primary'].get(), widgets['texts']['output'])
     )
-    buttons['population'].grid(row=3, column=0, pady=(0, 20),
-                               ipady=10, ipadx=10, columnspan=2)
+    buttons['population'].grid(
+        row=3, column=0, pady=(0, 20), ipady=10, ipadx=10, columnspan=2
+    )
     return buttons
 
 

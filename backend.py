@@ -118,7 +118,10 @@ def get_input():
 
 def is_valid_keyword(keyword):
     """Validates that a keyword contains only letters, numbers, and spaces."""
-    return all(char.isalnum() or char.isspace() for char in keyword)
+    return (
+        all(char.isalnum() or char.isspace() for char in keyword)
+        and len(keyword) != 0
+    )
 
 
 def generate_output(primary, secondary):
